@@ -27,21 +27,24 @@ function displayScreen (text: string) {
     basic.showString(text)
 }
 input.onButtonPressed(Button.A, function () {
+    newMouth = "smile"
     controlHead(headDownMax, headHorizontalStraight)
 })
 function blink () {
-    if (blinkOn == 1) {
-        if (eyeStatus == 1) {
-            controlEyes("close")
-            eyeStatus = 0
-            blinkTimer = 500
-        } else {
-            controlEyes("open")
-            eyeStatus = 1
-            blinkTimer = randint(blinkMin, blinkMax)
+    if (input.runningTime() >= nextBlinkTime) {
+        if (blinkOn == 1) {
+            if (eyeStatus == 1) {
+                controlEyes("close")
+                eyeStatus = 0
+                blinkTimer = 500
+            } else {
+                controlEyes("open")
+                eyeStatus = 1
+                blinkTimer = randint(blinkMin, blinkMax)
+            }
         }
+        nextBlinkTime = input.runningTime() + blinkTimer
     }
-    basic.pause(blinkTimer)
 }
 input.onGesture(Gesture.TiltLeft, function () {
     controlHead(headVerticalStraight, headLeftMax)
@@ -59,6 +62,7 @@ input.onButtonPressed(Button.AB, function () {
     } else {
         blinkOn = 0
     }
+    basic.showString("" + (blinkOn))
 })
 radio.onReceivedString(function (receivedString) {
     lastRadio = radio.receivedPacket(RadioPacketProperty.SignalStrength)
@@ -71,6 +75,7 @@ radio.onReceivedString(function (receivedString) {
     pins.servoWritePin(AnalogPin.P16, 90)
 })
 input.onButtonPressed(Button.B, function () {
+    newMouth = "frown"
     controlHead(headUpMax, headHorizontalStraight)
 })
 input.onGesture(Gesture.Shake, function () {
@@ -93,7 +98,9 @@ let cMouth = ""
 let horizontal = 0
 let vertical = 0
 let blinkTimer = 0
+let nextBlinkTime = 0
 let lastRadio = 0
+let newMouth = ""
 let smile: number[] = []
 let eyeStatus = 0
 let eyesClosed = 0
@@ -107,7 +114,6 @@ let headDownMax = 0
 let headUpMax = 0
 let blinkMin = 0
 let blinkMax = 0
-let nextBlinkTime = 0
 let showMouth: number[] = []
 blinkMax = 5000
 blinkMin = 8000
@@ -147,7 +153,7 @@ let meh = max7219_matrix.getCustomCharacterArray(
 let derp = max7219_matrix.getCustomCharacterArray(
 "B00000000,B00000000,B11000011,B11000011,B11111111,B01111110,B00001110,B00000100"
 )
-let newMouth = "meh"
+newMouth = "meh"
 // const mouthShapes = {
 // smile: max7219_matrix.getCustomCharacterArray(
 // "B00000000,B00000000,B00000000,B11000011,B11000011,B11000011,B11111111,B01111110",
@@ -173,10 +179,10 @@ lastRadio = 0
 radio.setGroup(42)
 controlHead(headVerticalStraight, headHorizontalStraight)
 controlEyes("close")
-basic.showString("b=" + blinkOn)
-displayScreen("RoboKid")
+basic.showString("" + (blinkOn))
 control.inBackground(function () {
     while (true) {
+        basic.pause(200)
         if (cMouth != newMouth) {
             controlMouth(newMouth)
             cMouth = newMouth
