@@ -23,12 +23,49 @@ max7219_matrix.displayCustomCharacter(
     true
     )
 }
+function controlRGB (red: number, green: number, blue: number) {
+    if (red != rgbRed) {
+        pins.digitalWritePin(DigitalPin.P3, red)
+        rgbRed = red
+    }
+    if (green != rgbGreen) {
+        pins.digitalWritePin(DigitalPin.P4, green)
+        rgbGreen = green
+    }
+    if (blue != rgbBlue) {
+        pins.digitalWritePin(DigitalPin.P6, blue)
+        rgbBlue = blue
+    }
+}
+// basic.showString(text)
 function displayScreen (text: string) {
-    basic.showString(text)
+	
+}
+function moveHead (direction: string) {
+    if (direction == "up") {
+        controlHead(headVerticalStraight + headVerticalMotion, headHorizontalStraight)
+    } else if (direction == "down") {
+        controlHead(headVerticalStraight - headVerticalMotion, headHorizontalStraight)
+    } else if (direction == "left") {
+        controlHead(headVerticalStraight, headHorizontalStraight + headHorizontalMotion)
+    } else if (direction == "right") {
+        controlHead(headVerticalStraight, headHorizontalStraight - headHorizontalMotion)
+    } else if (direction == "upleft") {
+        controlHead(headVerticalStraight + headVerticalMotion, headHorizontalStraight + headHorizontalMotion)
+    } else if (direction == "downleft") {
+        controlHead(headVerticalStraight - headVerticalMotion, headHorizontalStraight + headHorizontalMotion)
+    } else if (direction == "upright") {
+        controlHead(headVerticalStraight + headVerticalMotion, headHorizontalStraight - headHorizontalMotion)
+    } else if (direction == "downright") {
+        controlHead(headVerticalStraight - headVerticalMotion, headHorizontalStraight - headHorizontalMotion)
+    } else if (direction == "forward") {
+        controlHead(headVerticalStraight, headHorizontalStraight)
+    }
 }
 input.onButtonPressed(Button.A, function () {
     newMouth = "smile"
-    controlHead(headDownMax, headHorizontalStraight)
+    moveHead("up")
+    controlRGB(1, 0, 1)
 })
 function blink () {
     if (input.runningTime() >= nextBlinkTime) {
@@ -47,7 +84,8 @@ function blink () {
     }
 }
 input.onGesture(Gesture.TiltLeft, function () {
-    controlHead(headVerticalStraight, headLeftMax)
+    moveHead("left")
+    controlRGB(0, 0, 1)
 })
 function controlEyes (status: string) {
     if (status == "close") {
@@ -76,29 +114,27 @@ radio.onReceivedString(function (receivedString) {
 })
 input.onButtonPressed(Button.B, function () {
     newMouth = "frown"
-    controlHead(headUpMax, headHorizontalStraight)
+    moveHead("down")
+    controlRGB(1, 0, 0)
 })
 input.onGesture(Gesture.Shake, function () {
-    controlHead(headVerticalStraight, headHorizontalStraight)
+    moveHead("forward")
+    controlRGB(0, 0, 0)
 })
 input.onGesture(Gesture.TiltRight, function () {
-    controlHead(headVerticalStraight, headRightMax)
+    moveHead("right")
+    controlRGB(0, 1, 0)
 })
 function controlHead (vertical: number, horizontal: number) {
-    if (vertical > headUpMax || vertical < headDownMax) {
-        vertical = headVerticalStraight
-    }
-    if (horizontal > headLeftMax || horizontal < headRightMax) {
-        horizontal = headHorizontalStraight
-    }
     pins.servoWritePin(AnalogPin.P1, horizontal)
     pins.servoWritePin(AnalogPin.P2, vertical)
 }
 let cMouth = ""
-let horizontal = 0
-let vertical = 0
 let blinkTimer = 0
 let nextBlinkTime = 0
+let rgbBlue = 0
+let rgbGreen = 0
+let rgbRed = 0
 let lastRadio = 0
 let newMouth = ""
 let smile: number[] = []
@@ -106,23 +142,21 @@ let eyeStatus = 0
 let eyesClosed = 0
 let eyesOpen = 0
 let blinkOn = 0
-let headHorizontalStraight = 0
-let headVerticalStraight = 0
-let headRightMax = 0
-let headLeftMax = 0
-let headDownMax = 0
-let headUpMax = 0
 let blinkMin = 0
 let blinkMax = 0
+let headVerticalMotion = 0
+let headHorizontalMotion = 0
+let headVerticalStraight = 0
+let headHorizontalStraight = 0
+let horizontal = 0
+let vertical = 0
 let showMouth: number[] = []
+headHorizontalStraight = 80
+headVerticalStraight = 70
+headHorizontalMotion = 30
+headVerticalMotion = 12
 blinkMax = 5000
 blinkMin = 8000
-headUpMax = 170
-headDownMax = 10
-headLeftMax = 170
-headRightMax = 10
-headVerticalStraight = 90
-headHorizontalStraight = 90
 blinkOn = 1
 eyesOpen = 87
 eyesClosed = 160
@@ -174,12 +208,11 @@ newMouth = "meh"
 // "B00000000,B00000000,B11000011,B11000011,B11111111,B01111110,B00001110,B00000100"
 // )
 // }
-led.enable(true)
+led.enable(false)
 lastRadio = 0
 radio.setGroup(42)
 controlHead(headVerticalStraight, headHorizontalStraight)
 controlEyes("close")
-basic.showString("" + (blinkOn))
 control.inBackground(function () {
     while (true) {
         basic.pause(200)
